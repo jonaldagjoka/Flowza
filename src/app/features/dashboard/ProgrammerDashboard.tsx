@@ -128,7 +128,7 @@ export function ProgrammerDashboard({
 
         <h2 className="text-xl mb-6">My Tasks</h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
           {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
             <div key={status}>
               <h3 className="text-sm uppercase tracking-wide text-gray-600 mb-3">

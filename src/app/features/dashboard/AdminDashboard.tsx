@@ -1,4 +1,3 @@
-//Helena worked in this page
 import { useState } from 'react';
 import { User, Project, ProjectMember, mockUsers } from '../../utils/mockData';
 import { Plus, LogOut, Users, FolderKanban } from 'lucide-react';
