@@ -1,4 +1,3 @@
-//Helena worked in this page
 import { useState } from 'react';
 import { User, Project, Task, ProjectMember, mockUsers } from '../../utils/mockData';
 import { Plus, LogOut, CheckCircle, Clock, AlertCircle, FileText } from 'lucide-react';
