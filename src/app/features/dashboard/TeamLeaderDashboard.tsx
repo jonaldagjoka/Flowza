@@ -100,7 +100,7 @@ export function TeamLeaderDashboard({
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <p className="text-sm text-gray-600">My Projects</p>
             <p className="text-3xl mt-1">{myProjects.length}</p>
@@ -116,6 +116,10 @@ export function TeamLeaderDashboard({
           <div className="bg-white p-6 rounded-lg shadow">
             <p className="text-sm text-gray-600">In Review</p>
             <p className="text-3xl mt-1">{tasks.filter(t => t.status === 'review' && myProjectIds.has(t.project_id)).length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <p className="text-sm text-gray-600">Completed</p>
+            <p className="text-3xl mt-1">{tasks.filter(t => t.status === 'done' && myProjectIds.has(t.project_id)).length}</p>
           </div>
         </div>
 
