@@ -1,4 +1,3 @@
-//Helena worked in this page
 import { useState } from 'react';
 import { User, Task, TaskHistory, ProjectFile, mockUsers } from '../../utils/mockData';
 import { LogOut, Upload, FileText, Clock, CheckCircle, AlertCircle, History } from 'lucide-react';
@@ -87,7 +86,16 @@ export function ProgrammerDashboard({
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Tasks</p>
+                <p className="text-3xl mt-1">{myTasks.length}</p>
+              </div>
+              <FileText className="w-10 h-10 text-gray-400" />
+            </div>
+          </div>
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -128,20 +136,20 @@ export function ProgrammerDashboard({
 
         <h2 className="text-xl mb-6">My Tasks</h2>
 
-        <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
-            <div key={status}>
-              <h3 className="text-sm uppercase tracking-wide text-gray-600 mb-3">
-                {status} ({statusTasks.length})
+            <div key={status} className="bg-gray-100 rounded-xl p-4">
+              <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-3 flex items-center justify-between">
+                <span className="font-semibold">{status}</span>
+                <span className="bg-white text-gray-500 rounded-full px-2 py-0.5 text-xs">{statusTasks.length}</span>
               </h3>
               <div className="space-y-3">
                 {statusTasks.length === 0 ? (
-                  <div className="bg-white p-6 rounded-lg shadow text-center text-gray-500 text-sm">No tasks</div>
+                  <div className="bg-white p-6 rounded-lg border border-dashed border-gray-300 text-center text-gray-400 text-sm">No tasks</div>
                 ) : (
                   statusTasks.map(task => {
                     const creator = mockUsers.find(u => u.user_id === task.created_by);
                     const taskFiles = getTaskFiles(task.task_id);
-
                     return (
                       <div key={task.task_id} className="bg-white p-4 rounded-lg shadow">
                         <div className="flex justify-between items-start mb-3">
@@ -153,7 +161,6 @@ export function ProgrammerDashboard({
                             </span>
                           </div>
                         </div>
-
                         <div className="text-xs text-gray-600 mb-3 space-y-1">
                           <div><span className="font-medium">Created by:</span> {creator?.name}</div>
                           <div><span className="font-medium">Deadline:</span> {new Date(task.deadline).toLocaleString()}</div>
@@ -161,7 +168,6 @@ export function ProgrammerDashboard({
                             <div><span className="font-medium">Files:</span> {taskFiles.length} uploaded</div>
                           )}
                         </div>
-
                         <div className="flex gap-2">
                           <select
                             value={task.status}
@@ -188,7 +194,6 @@ export function ProgrammerDashboard({
                             History
                           </button>
                         </div>
-
                         {taskFiles.length > 0 && (
                           <div className="mt-3 pt-3 border-t">
                             <p className="text-xs text-gray-600 mb-2">Uploaded Files:</p>
