@@ -1,21 +1,27 @@
-//Helena worked in this page
 import { useState } from 'react';
 
 interface LoginProps {
   onLogin: (userId: number, role: string) => void;
 }
 
-export function Login({ onLogin }: LoginProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const demoUsers = [
+  { id: 1, email: 'admin@flowza.com', password: 'admin123', role: 'admin', name: 'Admin User', initials: 'AU' },
+  { id: 2, email: 'team1@flowza.com', password: 'team123', role: 'teamleader', name: 'Helena Kace', initials: 'HK' },
+  { id: 3, email: 'team2@flowza.com', password: 'team123', role: 'teamleader', name: 'Erjeta Rrapaj', initials: 'ER' },
+  { id: 4, email: 'dev1@flowza.com', password: 'dev123', role: 'programmer', name: 'Isnalda Sylaj', initials: 'IS' },
+  { id: 5, email: 'dev2@flowza.com', password: 'dev123', role: 'programmer', name: 'Jonalda Gjoka', initials: 'JG' },
+];
 
-  const demoUsers = [
-    { id: 1, email: 'admin@flowza.com', password: 'admin123', role: 'admin', name: 'Admin User' },
-    { id: 2, email: 'team1@flowza.com', password: 'team123', role: 'teamleader', name: 'John Leader' },
-    { id: 3, email: 'team2@flowza.com', password: 'team123', role: 'teamleader', name: 'Sarah Leader' },
-    { id: 4, email: 'dev1@flowza.com', password: 'dev123', role: 'programmer', name: 'Mike Developer' },
-    { id: 5, email: 'dev2@flowza.com', password: 'dev123', role: 'programmer', name: 'Anna Developer' },
-  ];
+const roleStyle: Record<string, { badge: string; avatar: string; label: string }> = {
+  admin:       { badge: 'bg-indigo-50 text-indigo-700', avatar: 'bg-indigo-50 text-indigo-700', label: 'Admin' },
+  teamleader:  { badge: 'bg-green-50 text-green-700',   avatar: 'bg-green-50 text-green-700',   label: 'Team leader' },
+  programmer:  { badge: 'bg-orange-50 text-orange-700', avatar: 'bg-orange-50 text-orange-700', label: 'Programmer' },
+};
+
+export function Login({ onLogin }: LoginProps) {
+  const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError]       = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,59 +29,85 @@ export function Login({ onLogin }: LoginProps) {
     if (user) {
       onLogin(user.id, user.role);
     } else {
-      alert('Invalid credentials. Try demo accounts below.');
+      setError(true);
+      setTimeout(() => setError(false), 2000);
     }
   };
 
+  const fill = (u: typeof demoUsers[0]) => {
+    setEmail(u.email);
+    setPassword(u.password);
+    setError(false);
+  };
+
+  const inputCls = `w-full h-10 px-3 border rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400/20 transition-colors ${
+    error ? 'border-red-400' : 'border-gray-200 focus:border-blue-400'
+  }`;
+
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #e0e7ff 100%)' }}>
-      <div className="max-w-md w-full mx-4 bg-white rounded-2xl shadow-sm border border-blue-100 p-8">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #e0f2fe 100%)' }}>
+      <div className="w-full max-w-md">
 
-        <div className="mb-7 text-center">
-          <h2 className="text-2xl font-bold text-gray-800">Project Management</h2>
-          <p className="mt-1 text-sm text-gray-400">Sign in to your account</p>
-        </div>
+        {/* Card */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-8">
 
-        <form className="space-y-4" onSubmit={handleLogin}>
-          <div>
-            <label htmlFor="email" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Email</label>
-            <input
-              id="email"
-              type="email"
-              required
-              placeholder="you@flowza.com"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 bg-gray-50 focus:outline-none focus:border-blue-400 focus:bg-white"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+          {/* Logo — now inside the card */}
+          <div className="flex items-center gap-2.5 mb-7">
+            <div className="w-9 h-9 rounded-lg bg-gray-900 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10h12M10 4l6 6-6 6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div className="text-xl font-semibold tracking-tight text-gray-900">Flowza</div>
+              <div className="text-xs text-gray-400">Project Management</div>
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Password</label>
-            <input
-              id="password"
-              type="password"
-              required
-              placeholder="••••••••"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 bg-gray-50 focus:outline-none focus:border-blue-400 focus:bg-white"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          <h2 className="text-lg font-semibold text-gray-900 mb-0.5">Welcome back</h2>
+          <p className="text-sm text-gray-400 mb-6">Sign in to continue to your workspace</p>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Email</label>
+              <input id="email" type="email" required placeholder="you@flowza.com"
+                className={inputCls} value={email} onChange={e => setEmail(e.target.value)} />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Password</label>
+              <input id="password" type="password" required placeholder="••••••••"
+                className={inputCls} value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            <button type="submit"
+              className="w-full h-10 bg-gray-900 hover:bg-gray-800 active:scale-[0.98] text-white text-sm font-medium rounded-lg transition-all mt-1">
+              Sign in
+            </button>
+          </form>
+
+          <div className="my-6 border-t border-gray-100" />
+
+          {/* Demo accounts */}
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Quick sign-in — demo accounts</p>
+          <div className="space-y-2">
+            {demoUsers.filter((_, i) => [0, 1, 3].includes(i)).map(u => {
+              const s = roleStyle[u.role];
+              return (
+                <button key={u.id} type="button" onClick={() => fill(u)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-50 hover:bg-white border border-gray-100 hover:border-gray-200 rounded-lg transition-all text-left">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${s.avatar}`}>
+                      {u.initials}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-800">{u.name}</div>
+                      <div className="text-xs text-gray-400">{u.email}</div>
+                    </div>
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${s.badge}`}>{s.label}</span>
+                </button>
+              );
+            })}
           </div>
-
-          <button
-            type="submit"
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors mt-2"
-          >
-            Sign in
-          </button>
-        </form>
-
-        <div className="mt-6 bg-gray-50 border border-gray-100 rounded-lg p-4 text-xs text-gray-500 space-y-1">
-          <p className="font-semibold text-gray-600 mb-2">Demo Accounts</p>
-          <p><span className="font-medium text-gray-700">Admin:</span> admin@flowza.com / admin123</p>
-          <p><span className="font-medium text-gray-700">Team Leader:</span> team1@flowza.com / team123</p>
-          <p><span className="font-medium text-gray-700">Programmer:</span> dev1@flowza.com / dev123</p>
         </div>
 
       </div>
