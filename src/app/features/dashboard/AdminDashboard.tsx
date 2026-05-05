@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { User, Project, ProjectMember, mockUsers } from '../../utils/mockData';
-import { Plus, LogOut, Users, FolderKanban } from 'lucide-react';
+import { Plus, LogOut, Users, FolderKanban, CheckCircle } from 'lucide-react';
 
 interface AdminDashboardProps {
   currentUser: User;
@@ -45,32 +45,46 @@ export function AdminDashboard({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'high': return 'bg-red-100 text-red-700';
+      case 'medium': return 'bg-yellow-100 text-yellow-700';
+      case 'low': return 'bg-green-100 text-green-700';
+      default: return 'bg-gray-100 text-gray-700';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'done': return 'bg-green-100 text-green-800';
-      case 'in progress': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'done': return 'bg-green-100 text-green-700';
+      case 'in progress': return 'bg-blue-100 text-blue-700';
+      default: return 'bg-gray-100 text-gray-700';
     }
   };
 
+  const stats = [
+    { label: 'Total Projects',  value: projects.length,                                         icon: <FolderKanban className="w-8 h-8 text-blue-400"   /> },
+    { label: 'Active Projects', value: projects.filter(p => p.status === 'in progress').length, icon: <FolderKanban className="w-8 h-8 text-green-400"  /> },
+    { label: 'Team Members',    value: mockUsers.filter(u => u.role !== 'admin').length,         icon: <Users        className="w-8 h-8 text-purple-400" /> },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #e0f2fe 100%)' }}>
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur border-b border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl">Admin Dashboard</h1>
-            <p className="text-sm text-gray-600">Welcome, {currentUser.name}</p>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-gray-900 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10h12M10 4l6 6-6 6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-base font-semibold text-gray-900 leading-tight">Admin Dashboard</h1>
+              <p className="text-xs text-gray-400">Welcome, {currentUser.name}</p>
+            </div>
           </div>
           <button
             onClick={onLogout}
-            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:bg-blue-50 border border-gray-200 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />
             Logout
@@ -79,75 +93,63 @@ export function AdminDashboard({
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Projects</p>
-                <p className="text-3xl mt-1">{projects.length}</p>
+        {/* Stat cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {stats.map(({ label, value, icon }) => (
+            <div key={label} className="bg-white/80 backdrop-blur border border-blue-100 p-5 rounded-xl shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">{label}</p>
+                  <p className="text-3xl font-semibold text-gray-800 mt-1">{value}</p>
+                </div>
+                {icon}
               </div>
-              <FolderKanban className="w-12 h-12 text-blue-500" />
             </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Active Projects</p>
-                <p className="text-3xl mt-1">{projects.filter(p => p.status === 'in progress').length}</p>
-              </div>
-              <FolderKanban className="w-12 h-12 text-green-500" />
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Team Members</p>
-                <p className="text-3xl mt-1">{mockUsers.filter(u => u.role !== 'admin').length}</p>
-              </div>
-              <Users className="w-12 h-12 text-purple-500" />
-            </div>
-          </div>
+          ))}
         </div>
 
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl">All Projects</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">All Projects</h2>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 text-sm transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             Create Project
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-4">
           {projects.map(project => {
             const teamLeader = getProjectTeamLeader(project.project_id);
             return (
-              <div key={project.project_id} className="bg-white p-6 rounded-lg shadow">
+              <div key={project.project_id} className="bg-white/80 backdrop-blur border border-blue-100 p-5 rounded-xl shadow-sm hover:border-blue-200 transition-colors">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg mb-2">{project.name}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{project.description}</p>
-                    <div className="flex gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(project.status)}`}>
+                    <h3 className="text-base font-semibold text-gray-800 mb-1">{project.name}</h3>
+                    <p className="text-sm text-gray-500 mb-3">{project.description}</p>
+                    <div className="flex gap-1.5">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                         {project.status}
                       </span>
-                      <span className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(project.priority)}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(project.priority)}`}>
                         {project.priority}
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">Team Leader</p>
+                  <div className="text-right ml-4">
+                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Team Leader</p>
                     {teamLeader ? (
-                      <p className="text-sm mt-1">{teamLeader.name}</p>
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                        <p className="text-sm font-medium text-gray-700">{teamLeader.name}</p>
+                      </div>
                     ) : (
                       <select
                         onChange={(e) => {
                           if (e.target.value) onAssignTeamLeader(project.project_id, parseInt(e.target.value));
                         }}
-                        className="mt-1 text-sm border border-gray-300 rounded px-2 py-1"
+                        className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white text-gray-600"
                         defaultValue=""
                       >
                         <option value="">Assign Team Leader</option>
@@ -158,9 +160,9 @@ export function AdminDashboard({
                     )}
                   </div>
                 </div>
-                <div className="flex gap-4 text-sm text-gray-600 border-t pt-4">
-                  <div><span className="font-medium">Start:</span> {new Date(project.start_date).toLocaleDateString()}</div>
-                  <div><span className="font-medium">Deadline:</span> {new Date(project.deadline).toLocaleDateString()}</div>
+                <div className="flex gap-4 text-xs text-gray-400 border-t border-blue-50 pt-3">
+                  <div><span className="font-medium text-gray-500">Start:</span> {new Date(project.start_date).toLocaleDateString()}</div>
+                  <div><span className="font-medium text-gray-500">Deadline:</span> {new Date(project.deadline).toLocaleDateString()}</div>
                 </div>
               </div>
             );
@@ -169,25 +171,25 @@ export function AdminDashboard({
       </main>
 
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl mb-4">Create New Project</h3>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl border border-blue-100">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">Create New Project</h3>
             <form onSubmit={handleCreateProject} className="space-y-4">
               <div>
-                <label className="block text-sm mb-1">Project Name</label>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Project Name</label>
                 <input
                   type="text"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
                   value={newProject.name}
                   onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-sm mb-1">Description</label>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Description</label>
                 <textarea
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
                   rows={3}
                   value={newProject.description}
                   onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
@@ -195,9 +197,9 @@ export function AdminDashboard({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">Priority</label>
+                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Priority</label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
                     value={newProject.priority}
                     onChange={(e) => setNewProject({ ...newProject, priority: e.target.value as any })}
                   >
@@ -207,9 +209,9 @@ export function AdminDashboard({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Status</label>
+                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Status</label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
                     value={newProject.status}
                     onChange={(e) => setNewProject({ ...newProject, status: e.target.value as any })}
                   >
@@ -221,37 +223,37 @@ export function AdminDashboard({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">Start Date</label>
+                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Start Date</label>
                   <input
                     type="date"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
                     value={newProject.start_date}
                     onChange={(e) => setNewProject({ ...newProject, start_date: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Deadline</label>
+                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Deadline</label>
                   <input
                     type="date"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
                     value={newProject.deadline}
                     onChange={(e) => setNewProject({ ...newProject, deadline: e.target.value })}
                   />
                 </div>
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-2 justify-end pt-1">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm hover:bg-gray-800 transition-colors"
                 >
                   Create Project
                 </button>
