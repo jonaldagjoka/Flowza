@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { User, Project, ProjectMember, mockUsers } from '../../utils/mockData';
+import { User, Project, ProjectMember } from '../../utils/mockData';
 import { Plus, LogOut, Users, FolderKanban, CheckCircle } from 'lucide-react';
 
 interface AdminDashboardProps {
   currentUser: User;
+  users: User[];
   projects: Project[];
   projectMembers: ProjectMember[];
   onCreateProject: (project: Omit<Project, 'project_id' | 'created_at' | 'created_by'>) => void;
@@ -13,6 +14,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({
   currentUser,
+  users,
   projects,
   projectMembers,
   onCreateProject,
@@ -29,7 +31,7 @@ export function AdminDashboard({
     deadline: '',
   });
 
-  const teamLeaders = mockUsers.filter(u => u.role === 'teamleader');
+  const teamLeaders = users.filter(u => u.role === 'teamleader');
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +42,7 @@ export function AdminDashboard({
 
   const getProjectTeamLeader = (projectId: number) => {
     const member = projectMembers.find(m => m.project_id === projectId && m.role_in_project === 'teamleader');
-    return member ? mockUsers.find(u => u.user_id === member.user_id) : null;
+    return member ? users.find(u => u.user_id === member.user_id) : null;
   };
 
   const getPriorityColor = (priority: string) => {
@@ -63,7 +65,7 @@ export function AdminDashboard({
   const stats = [
     { label: 'Total Projects',  value: projects.length,                                         icon: <FolderKanban className="w-8 h-8 text-blue-400"   /> },
     { label: 'Active Projects', value: projects.filter(p => p.status === 'in progress').length, icon: <FolderKanban className="w-8 h-8 text-green-400"  /> },
-    { label: 'Team Members',    value: mockUsers.filter(u => u.role !== 'admin').length,         icon: <Users        className="w-8 h-8 text-purple-400" /> },
+    { label: 'Team Members',    value: users.filter(u => u.role !== 'admin').length,         icon: <Users        className="w-8 h-8 text-purple-400" /> },
   ];
 
   return (

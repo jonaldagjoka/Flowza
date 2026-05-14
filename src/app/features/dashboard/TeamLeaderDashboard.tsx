@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { User, Project, Task, ProjectMember, mockUsers } from '../../utils/mockData';
+import { User, Project, Task, ProjectMember } from '../../utils/mockData';
 import { Plus, LogOut, CheckCircle, Clock, AlertCircle, FileText, FolderOpen } from 'lucide-react';
 
 interface TeamLeaderDashboardProps {
   currentUser: User;
+  users: User[];
   projects: Project[];
   tasks: Task[];
   projectMembers: ProjectMember[];
@@ -14,6 +15,7 @@ interface TeamLeaderDashboardProps {
 
 export function TeamLeaderDashboard({
   currentUser,
+  users,
   projects,
   tasks,
   projectMembers,
@@ -39,7 +41,7 @@ export function TeamLeaderDashboard({
 
   const getProjectProgrammers = (projectId: number) => {
     const programmerMembers = projectMembers.filter(pm => pm.project_id === projectId && pm.role_in_project === 'programmer');
-    return mockUsers.filter(u => programmerMembers.some(pm => pm.user_id === u.user_id));
+    return users.filter(u => programmerMembers.some(pm => pm.user_id === u.user_id));
   };
 
   const getProjectTasks = (projectId: number) => tasks.filter(t => t.project_id === projectId);
@@ -172,7 +174,7 @@ export function TeamLeaderDashboard({
                   ) : (
                     <div className="space-y-2.5">
                       {projectTasks.map(task => {
-                        const assignedUser = mockUsers.find(u => u.user_id === task.assigned_to);
+                        const assignedUser = users.find(u => u.user_id === task.assigned_to);
                         return (
                           <div key={task.task_id} className="border border-gray-100 rounded-lg p-4 bg-white hover:border-blue-200 transition-colors">
                             <div className="flex justify-between items-start mb-2">

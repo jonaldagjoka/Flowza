@@ -1,123 +1,154 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Login } from './features/auth/Login';
 import { AdminDashboard } from './features/dashboard/AdminDashboard';
 import { TeamLeaderDashboard } from './features/dashboard/TeamLeaderDashboard';
 import { ProgrammerDashboard } from './features/dashboard/ProgrammerDashboard';
-import {
-  mockUsers,
-  mockProjects,
-  mockProjectMembers,
-  mockTasks,
-  mockTaskHistory,
-  mockProjectFiles,
-  User,
-  Project,
-  ProjectMember,
-  Task,
-  TaskHistory,
-  ProjectFile
-} from './utils/mockData';
+import { API_BASE_URL } from './features/auth/api';
+import type { AuthUser } from './features/auth/api';
+import type { User, Project, ProjectMember, Task, TaskHistory, ProjectFile } from './utils/mockData';
 
 export default function App() {
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [taskHistory, setTaskHistory] = useState<TaskHistory[]>([]);
+  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
-  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>(mockProjectMembers);
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
-  const [taskHistory, setTaskHistory] = useState<TaskHistory[]>(mockTaskHistory);
-  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>(mockProjectFiles);
+  const currentUserRole = currentUser?.role ?? null;
 
-  const currentUser = mockUsers.find(u => u.user_id === currentUserId);
+  const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
+    const response = await fetch(`${API_BASE_URL}/api/${endpoint}`, options);
+    const json = await response.json().catch(() => null);
 
-  const handleLogin = (userId: number, role: string) => {
-    setCurrentUserId(userId);
-    setCurrentUserRole(role);
+    if (!response.ok) {
+      const message = json?.message || 'API request failed.';
+      throw new Error(message);
+    }
+
+    if (!json || !json.success) {
+      throw new Error(json?.message || 'Invalid API response.');
+    }
+
+    return json;
+  };
+
+  const loadData = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const json = await apiFetch('data.php?type=all');
+      setUsers(json.data.users ?? []);
+      setProjects(json.data.projects ?? []);
+      setProjectMembers(json.data.project_members ?? []);
+      setTasks(json.data.tasks ?? []);
+      setTaskHistory(json.data.task_history ?? []);
+      setProjectFiles(json.data.project_files ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      void loadData();
+    }
+  }, [currentUser]);
+
+  const handleLogin = (user: AuthUser) => {
+    setCurrentUser(user);
   };
 
   const handleLogout = () => {
-    setCurrentUserId(null);
-    setCurrentUserRole(null);
+    setCurrentUser(null);
+    setUsers([]);
+    setProjects([]);
+    setProjectMembers([]);
+    setTasks([]);
+    setTaskHistory([]);
+    setProjectFiles([]);
+    setError('');
   };
 
-  const handleCreateProject = (projectData: Omit<Project, 'project_id' | 'created_at' | 'created_by'>) => {
-    const newProject: Project = {
+  const postAction = async (action: string, body: object) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      await apiFetch(`data.php?action=${action}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to perform action.');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateProject = async (projectData: Omit<Project, 'project_id' | 'created_at' | 'created_by'>) => {
+    if (!currentUser) {
+      throw new Error('Not authenticated.');
+    }
+
+    await postAction('createproject', {
       ...projectData,
-      project_id: projects.length + 1,
-      created_by: currentUserId!,
-      created_at: new Date().toISOString(),
-    };
-    setProjects([...projects, newProject]);
+      created_by: currentUser.user_id,
+    });
   };
 
-  const handleAssignTeamLeader = (projectId: number, userId: number) => {
-    const existingMember = projectMembers.find(
-      pm => pm.project_id === projectId && pm.role_in_project === 'teamleader'
-    );
+  const handleAssignTeamLeader = async (projectId: number, userId: number) => {
+    await postAction('assignteamleader', { project_id: projectId, user_id: userId });
+  };
 
-    if (existingMember) {
-      alert('This project already has a team leader!');
-      return;
+  const handleCreateTask = async (taskData: Omit<Task, 'task_id' | 'created_at' | 'created_by'>) => {
+    if (!currentUser) {
+      throw new Error('Not authenticated.');
     }
 
-    const newMember: ProjectMember = {
-      project_id: projectId,
-      user_id: userId,
-      role_in_project: 'teamleader',
-      assigned_at: new Date().toISOString(),
-    };
-    setProjectMembers([...projectMembers, newMember]);
-  };
-
-  const handleCreateTask = (taskData: Omit<Task, 'task_id' | 'created_at' | 'created_by'>) => {
-    const newTask: Task = {
+    await postAction('createtask', {
       ...taskData,
-      task_id: tasks.length + 1,
-      created_by: currentUserId!,
-      created_at: new Date().toISOString(),
-    };
-    setTasks([...tasks, newTask]);
+      created_by: currentUser.user_id,
+    });
   };
 
-  const handleUpdateProjectStatus = (projectId: number, status: 'new' | 'in progress' | 'done') => {
-    setProjects(projects.map(p =>
-      p.project_id === projectId ? { ...p, status } : p
-    ));
+  const handleUpdateProjectStatus = async (projectId: number, status: 'new' | 'in progress' | 'done') => {
+    await postAction('updateprojectstatus', { project_id: projectId, status });
   };
 
-  const handleUpdateTaskStatus = (taskId: number, status: 'new' | 'in progress' | 'review' | 'done') => {
-    const task = tasks.find(t => t.task_id === taskId);
-    if (task && task.status !== status) {
-      const newHistory: TaskHistory = {
-        history_id: taskHistory.length + 1,
-        task_id: taskId,
-        changed_by: currentUserId!,
-        old_status: task.status,
-        new_status: status,
-        changed_at: new Date().toISOString(),
-      };
-      setTaskHistory([...taskHistory, newHistory]);
-
-      setTasks(tasks.map(t =>
-        t.task_id === taskId ? { ...t, status } : t
-      ));
+  const handleUpdateTaskStatus = async (taskId: number, status: 'new' | 'in progress' | 'review' | 'done') => {
+    if (!currentUser) {
+      throw new Error('Not authenticated.');
     }
+
+    await postAction('updatetaskstatus', {
+      task_id: taskId,
+      status,
+      changed_by: currentUser.user_id,
+    });
   };
 
-  const handleUploadFile = (taskId: number, fileName: string) => {
-    const task = tasks.find(t => t.task_id === taskId);
-    if (task) {
-      const newFile: ProjectFile = {
-        file_id: projectFiles.length + 1,
-        project_id: task.project_id,
-        task_id: taskId,
-        uploaded_by: currentUserId!,
-        file_name: fileName,
-        file_path: `/uploads/${fileName}`,
-        uploaded_at: new Date().toISOString(),
-      };
-      setProjectFiles([...projectFiles, newFile]);
+  const handleUploadFile = async (taskId: number, fileName: string) => {
+    if (!currentUser) {
+      throw new Error('Not authenticated.');
     }
+
+    await postAction('uploadfile', {
+      task_id: taskId,
+      file_name: fileName,
+      uploaded_by: currentUser.user_id,
+    });
   };
 
   if (!currentUser) {
@@ -128,6 +159,7 @@ export default function App() {
     return (
       <AdminDashboard
         currentUser={currentUser}
+        users={users}
         projects={projects}
         projectMembers={projectMembers}
         onCreateProject={handleCreateProject}
@@ -141,6 +173,7 @@ export default function App() {
     return (
       <TeamLeaderDashboard
         currentUser={currentUser}
+        users={users}
         projects={projects}
         tasks={tasks}
         projectMembers={projectMembers}
@@ -155,6 +188,7 @@ export default function App() {
     return (
       <ProgrammerDashboard
         currentUser={currentUser}
+        users={users}
         tasks={tasks}
         taskHistory={taskHistory}
         projectFiles={projectFiles}

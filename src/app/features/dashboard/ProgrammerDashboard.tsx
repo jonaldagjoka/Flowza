@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { User, Task, TaskHistory, ProjectFile, mockUsers } from '../../utils/mockData';
+import { User, Task, TaskHistory, ProjectFile } from '../../utils/mockData';
 import { LogOut, Upload, FileText, Clock, CheckCircle, AlertCircle, History } from 'lucide-react';
 
 interface ProgrammerDashboardProps {
   currentUser: User;
+  users: User[];
   tasks: Task[];
   taskHistory: TaskHistory[];
   projectFiles: ProjectFile[];
@@ -131,7 +132,7 @@ export function ProgrammerDashboard({
                   <div className="bg-white/60 p-6 rounded-lg border border-dashed border-blue-100 text-center text-gray-400 text-sm">No tasks</div>
                 ) : (
                   statusTasks.map(task => {
-                    const creator = mockUsers.find(u => u.user_id === task.created_by);
+                    const creator = users.find(u => u.user_id === task.created_by);
                     const taskFiles = getTaskFiles(task.task_id);
                     return (
                       <div key={task.task_id} className="bg-white border border-gray-100 hover:border-blue-200 p-4 rounded-lg shadow-sm transition-colors">
@@ -244,7 +245,7 @@ export function ProgrammerDashboard({
                 <p className="text-sm text-gray-400 text-center py-4">No history available</p>
               ) : (
                 getTaskHistory(selectedTaskId).map(history => {
-                  const changedBy = mockUsers.find(u => u.user_id === history.changed_by);
+                  const changedBy = users.find(u => u.user_id === history.changed_by);
                   return (
                     <div key={history.history_id} className="border-l-2 border-blue-300 pl-3 py-2">
                       <div className="flex items-center gap-2 mb-1">
