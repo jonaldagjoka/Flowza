@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
+import { loginUser, type AuthUser } from './api';
 
 interface LoginProps {
-  onLogin: (userId: number, role: string) => void;
+  onLogin: (user: AuthUser) => void;
 }
 
-const demoUsers = [
+const sampleAccounts = [
   { id: 1, email: 'admin@flowza.com', password: 'admin123', role: 'admin', name: 'Admin User', initials: 'AU' },
   { id: 2, email: 'team1@flowza.com', password: 'team123', role: 'teamleader', name: 'Helena Kace', initials: 'HK' },
   { id: 3, email: 'team2@flowza.com', password: 'team123', role: 'teamleader', name: 'Erjeta Rrapaj', initials: 'ER' },
@@ -22,22 +23,32 @@ export function Login({ onLogin }: LoginProps) {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState(false);
+  const [errorText, setErrorText] = useState('');
+  const [loading, setLoading]   = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const user = demoUsers.find(u => u.email === email && u.password === password);
-    if (user) {
-      onLogin(user.id, user.role);
-    } else {
+    setLoading(true);
+    setError(false);
+    setErrorText('');
+
+    try {
+      const user = await loginUser(email, password);
+      onLogin(user);
+    } catch (err) {
       setError(true);
-      setTimeout(() => setError(false), 2000);
+      setErrorText(err instanceof Error ? err.message : 'Invalid email or password.');
+      setTimeout(() => setError(false), 4000);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fill = (u: typeof demoUsers[0]) => {
+  const fill = (u: typeof sampleAccounts[0]) => {
     setEmail(u.email);
     setPassword(u.password);
     setError(false);
+    setErrorText('');
   };
 
   const inputCls = `w-full h-10 px-3 border rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400/20 transition-colors ${
@@ -68,6 +79,11 @@ export function Login({ onLogin }: LoginProps) {
           <p className="text-sm text-gray-400 mb-6">Sign in to continue to your workspace</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
+            {error && errorText ? (
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {errorText}
+              </div>
+            ) : null}
             <div>
               <label htmlFor="email" className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Email</label>
               <input id="email" type="email" required placeholder="you@flowza.com"
@@ -79,17 +95,18 @@ export function Login({ onLogin }: LoginProps) {
                 className={inputCls} value={password} onChange={e => setPassword(e.target.value)} />
             </div>
             <button type="submit"
-              className="w-full h-10 bg-gray-900 hover:bg-gray-800 active:scale-[0.98] text-white text-sm font-medium rounded-lg transition-all mt-1">
-              Sign in
+              disabled={loading}
+              className="w-full h-10 bg-gray-900 hover:bg-gray-800 active:scale-[0.98] text-white text-sm font-medium rounded-lg transition-all mt-1 disabled:cursor-not-allowed disabled:opacity-60">
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
           <div className="my-6 border-t border-gray-100" />
 
           {/* Demo accounts */}
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Quick sign-in — demo accounts</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Quick sign-in — sample accounts</p>
           <div className="space-y-2">
-            {demoUsers.filter((_, i) => [0, 1, 3].includes(i)).map(u => {
+            {sampleAccounts.filter((_, i) => [0, 1, 3].includes(i)).map(u => {
               const s = roleStyle[u.role];
               return (
                 <button key={u.id} type="button" onClick={() => fill(u)}
